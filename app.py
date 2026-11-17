@@ -57,9 +57,15 @@ def get_news(city: str) -> str:
         if not news:
             return f"No news found for {city}."
 
-        points = [f"{i}. {item['title']}" for i, item in enumerate(news[:5], 1)]
-        source_url = news[0].get("url", "")
-        return "\n".join(points) + f"\n\nSource: {source_url}"
+        points = []
+        for i, item in enumerate(news[:5], 1):
+            title = item.get("title", "").strip()
+            url = item.get("url", "").strip()
+            if url:
+                points.append(f"{i}. [{title}]({url})")
+            else:
+                points.append(f"{i}. {title}")
+        return "\n".join(points)
 
     except Exception as e:
         return f"Error fetching news: {str(e)}"
@@ -117,7 +123,15 @@ llm = ChatGroq(
 agent = create_agent(
     model=llm,
     tools=[get_weather, get_news],
-    system_prompt="You are a helpful AI assistant. Use the available tools to answer questions about weather and news for cities.",
+    system_prompt=(
+        "You are an expert City Intelligence AI assistant. Use the available tools to answer questions about weather and news for cities.\n"
+        "Guidelines for clean formatting:\n"
+        "- Format responses using clean, modern Markdown.\n"
+        "- For Weather: Clearly present conditions, temperature (°C), and description.\n"
+        "- For News: List top stories using clean numbered bullet points with markdown links [Headline](url) whenever available.\n"
+        "- Do NOT output raw or ASCII pipe tables for news stories; formatted bulleted lists look much cleaner and easier to read on mobile and chat screens.\n"
+        "- Keep summaries concise, polite, and helpful."
+    ),
     middleware=[human_approval]
 )
 
