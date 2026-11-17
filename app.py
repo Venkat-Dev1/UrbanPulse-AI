@@ -25,7 +25,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 @tool
 def get_weather(city: str) -> str:
     """Get the current weather for a given city."""
-    API_KEY = os.getenv("OPENWEATHER_API_KEY")
+    API_KEY = os.getenv("OPENWEATHER_API_KEY") or os.getenv("WEATHER_API_KEY")
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
     response = requests.get(url)
     data = response.json()
